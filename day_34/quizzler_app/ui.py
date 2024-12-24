@@ -14,8 +14,8 @@ class QuizInterface:
         self.window.config(padx=20, pady=20, bg=THEME_COLOR)
 
         # Score label
-        self.score_lebel = Label(text="Score: 0", bg=THEME_COLOR, fg="white")
-        self.score_lebel.grid(row=0, column=1)
+        self.score_label = Label(text="Score: 0", bg=THEME_COLOR, fg="white")
+        self.score_label.grid(row=0, column=1)
 
         # Question
         self.canvas = Canvas(width=300, height=250, bg="white")

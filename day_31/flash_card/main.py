@@ -1,5 +1,5 @@
 from tkinter import *
-import pandas as pd # type: ignore
+import pandas as pd
 from random import choice
 
 BACKGROUND_COLOR = "#B1DDC6"

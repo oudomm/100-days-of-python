@@ -1,46 +1,49 @@
-import requests
 import os
+import requests
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
 
-OWM_Endpoint = "https://api.openweathermap.org/data/2.5/forecast"
-owm_api_key = os.environ.get("OWM_API_KEY")
-bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
-bot_chatID = os.environ.get("TELEGRAM_CHAT_ID")
+MY_LAT = os.getenv("MY_LAT")
+MY_LONG = os.getenv("MY_LONG")
+OWM_ENDPOINT = "https://api.openweathermap.org/data/2.5/forecast"
+API_KEY = os.getenv("OWM_API_KEY")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-
+# Request weather data
 weather_params = {
-    "lat": 11.5782802263959,
-    "lon": 104.90179009030645,
-    "appid": owm_api_key,
-    "cnt": 4,
+    "lat": MY_LAT,
+    "lon": MY_LONG,
+    "appid": API_KEY,
+    "cnt": 4  # check next 12 hours (3h x 4)
 }
 
+response = requests.get(OWM_ENDPOINT, params=weather_params)
+response.raise_for_status()
+weather_data = response.json()
 
+# Check for rain in the forecast
+rain_times = [
+    hour_data["dt_txt"]
+    for hour_data in weather_data["list"]
+    if int(hour_data["weather"][0]["id"]) < 700
+]
+
+
+# Send Telegram message if rain is expected
 def telegram_bot_sendtext(bot_message):
-    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
-    response = requests.get(send_text)
-    return response.json()
+    send_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    params = {
+        "chat_id": CHAT_ID,
+        "parse_mode": "Markdown",
+        "text": bot_message
+    }
+    bot_response = requests.get(send_url, params=params)
+    return bot_response.json()
 
 
-def fetch_weather_data():
-    response = requests.get(OWM_Endpoint, params=weather_params)
-    response.raise_for_status()
-    return response.json()
-
-
-def check_rain(data):
-    for hour_data in data["list"]:
-        condition_code = hour_data["weather"][0]["id"]
-        if int(condition_code) < 700:
-            return True
-
-
-try:
-    weather_data = fetch_weather_data()
-    if check_rain(weather_data):
-        test = telegram_bot_sendtext("It's going to rain today. Remember to bring an ☔️")
-        print(test)
-except requests.exceptions.RequestException as e:
-    print(f"An error occurred while fetching data: {e}")
-except Exception as e:
-    print(f"An unexpected error occurred: {e}")
+if rain_times:
+    message = "🌧 *Rain Alert!*\nRain expected at:\n" + "\n".join(rain_times) + "\n\nBring an umbrella ☔"
+    telegram_bot_sendtext(message)

@@ -6,8 +6,8 @@ import os
 
 MY_LAT = 11.556374
 MY_LONG = 104.928207
-MY_EMAIL = os.getenv("YOUR_EMAIL")
-MY_PASSWORD = os.getenv("YOUR_PASSWORD")
+MY_EMAIL = "oudomphoem@gmail.com"
+MY_PASSWORD = "igct yyao pulh ppps"
 
 
 def is_iss_overhead():
